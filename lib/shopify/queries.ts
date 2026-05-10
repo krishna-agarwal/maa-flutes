@@ -15,13 +15,22 @@ const PRODUCT_CARD_FRAGMENT = `
   id
   handle
   title
+  vendor
   availableForSale
   featuredImage { ${IMAGE_FRAGMENT} }
+  images(first: 5) {
+    edges { node { ${IMAGE_FRAGMENT} } }
+  }
   priceRange {
     minVariantPrice { ${MONEY_FRAGMENT} }
   }
   compareAtPriceRange {
     minVariantPrice { ${MONEY_FRAGMENT} }
+  }
+  variants(first: 1) {
+    edges {
+      node { id availableForSale }
+    }
   }
 `;
 
