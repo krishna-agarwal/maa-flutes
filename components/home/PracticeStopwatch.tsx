@@ -9,6 +9,7 @@ import {
   GOAL_MIN_MS,
   GOAL_MAX_MS,
 } from "@/lib/practice";
+import { Settings, Play, Pause, RotateCcw } from "lucide-react";
 
 // Slider step (UI concern only)
 const GOAL_STEP_MS = 5 * 60 * 1000;
@@ -129,11 +130,12 @@ function ProgressRing({
 }
 
 export default function PracticeStopwatch() {
-  const { stats, user, loading, goalMs, logSession, updateGoal } = usePractice();
+  const { stats, sessions, user, loading, goalMs, logSession, updateGoal } = usePractice();
 
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [tempGoal, setTempGoal] = useState(goalMs);
 
   const startTimeRef = useRef<number | null>(null);
   const frameRef = useRef<number | null>(null);
@@ -184,14 +186,27 @@ export default function PracticeStopwatch() {
   const totalWithCurrent = stats.totalMs + elapsed;
   const { level } = getLevel(totalWithCurrent);
 
+  // Calculate durations for last 7 days from sessions
+  const last7DayDurations = useMemo(() => {
+    const durations: number[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      const dayTotal = sessions
+        .filter((s) => s.date === d)
+        .reduce((sum, s) => sum + s.duration, 0);
+      durations.push(dayTotal);
+    }
+    return durations;
+  }, [sessions]);
+
   // Streak visualization — today's dot lights up as soon as the session passes 5s
-  const liveToday = stats.last7Days[6] || elapsed >= 5000;
-  const last7Live = [...stats.last7Days.slice(0, 6), liveToday];
+  const liveToday = last7DayDurations[6] + elapsed || elapsed >= 5000;
+  const last7Live = [...last7DayDurations.slice(0, 6), liveToday];
   const dayLabels = useMemo(() => last7DayLabels(), []);
-  const liveStreak = stats.streak + (liveToday && !stats.last7Days[6] ? 1 : 0);
+  const liveStreak = stats.streak + (liveToday && !last7DayDurations[6] ? 1 : 0);
   const liveBest = Math.max(stats.bestStreak, liveStreak);
   const streakAtRisk =
-    stats.streak > 0 && !stats.last7Days[6] && elapsed < 5000;
+    stats.streak > 0 && !last7DayDurations[6] && elapsed < 5000;
 
   // Motivational message — richer nudges
   function getMessage(): string {
@@ -220,6 +235,90 @@ export default function PracticeStopwatch() {
 
   return (
     <div className="w-full max-w-sm bg-white/[0.03] border border-white/10 rounded-3xl p-5 sm:p-6">
+      {/* Header with settings button */}
+      <div className="flex justify-end mb-4 relative">
+        <button
+          type="button"
+          onClick={() => {
+            setShowSettings((v) => !v);
+            setTempGoal(goalMs);
+          }}
+          aria-expanded={showSettings}
+          aria-label="Edit daily goal"
+          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+            showSettings
+              ? "bg-amber-500/20 text-amber-300"
+              : "text-white/50 hover:text-white/70 hover:bg-white/10"
+          }`}
+        >
+          <Settings size={16} />
+        </button>
+
+        {/* Settings Popover */}
+        {showSettings && (
+          <div className="absolute top-10 right-0 w-72 bg-stone-900/95 border border-white/20 rounded-xl p-4 shadow-xl z-50 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-semibold text-white">Daily Goal</span>
+              <span className="text-lg font-bold text-amber-300 tabular-nums">
+                {formatDuration(tempGoal)}
+              </span>
+            </div>
+
+            <input
+              type="range"
+              min={GOAL_MIN_MS}
+              max={GOAL_MAX_MS}
+              step={GOAL_STEP_MS}
+              value={tempGoal}
+              onChange={(e) => setTempGoal(Number(e.target.value))}
+              className="w-full accent-amber-400 mb-4"
+              aria-label="Daily practice goal"
+            />
+
+            <div className="flex gap-1.5 mb-4">
+              {[15, 30, 45, 60, 90].map((m) => {
+                const ms = m * 60000;
+                const active = ms === tempGoal;
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setTempGoal(ms)}
+                    className={`flex-1 text-xs py-2 rounded-md font-medium transition-colors ${
+                      active
+                        ? "bg-amber-500 text-stone-900"
+                        : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+                    }`}
+                  >
+                    {m < 60 ? `${m}m` : `${m / 60}h`}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowSettings(false)}
+                className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white/80 font-medium rounded-lg transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  updateGoal(tempGoal);
+                  setShowSettings(false);
+                }}
+                className="flex-1 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-lg transition-colors text-sm"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Ring + controls */}
       <div className="flex flex-col items-center">
         <div className="relative w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center">
@@ -242,15 +341,17 @@ export default function PracticeStopwatch() {
           {!running ? (
             <button
               onClick={handleStart}
-              className="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl transition-all text-sm shadow-md shadow-amber-500/20 active:scale-95"
+              className="flex-1 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl transition-all text-sm shadow-md shadow-amber-500/20 active:scale-95 flex items-center justify-center gap-2"
             >
-              {elapsed > 0 ? "Resume" : "Start Practice"}
+              <Play size={16} />
+              {elapsed > 0 ? "Resume" : "Start"}
             </button>
           ) : (
             <button
               onClick={handlePause}
-              className="px-6 py-2.5 bg-white/15 hover:bg-white/25 text-white font-bold rounded-xl transition-all text-sm backdrop-blur-sm active:scale-95"
+              className="flex-1 px-6 py-2.5 bg-white/15 hover:bg-white/25 text-white font-bold rounded-xl transition-all text-sm backdrop-blur-sm active:scale-95 flex items-center justify-center gap-2"
             >
+              <Pause size={16} />
               Pause
             </button>
           )}
@@ -258,9 +359,10 @@ export default function PracticeStopwatch() {
           {elapsed > 0 && (
             <button
               onClick={handleReset}
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/80 font-bold rounded-xl transition-all text-sm backdrop-blur-sm active:scale-95"
+              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white/80 font-bold rounded-xl transition-all text-sm backdrop-blur-sm active:scale-95 flex items-center justify-center gap-2"
             >
-              Done
+              <RotateCcw size={16} />
+              <span className="hidden sm:inline">Done</span>
             </button>
           )}
         </div>
@@ -317,17 +419,42 @@ export default function PracticeStopwatch() {
           </span>
         </div>
         <div className="flex items-center justify-between gap-1.5">
-          {last7Live.map((done, i) => {
+          {last7Live.map((dayMs, i) => {
             const isToday = i === 6;
+            const ms = typeof dayMs === "number" ? dayMs : 0;
+            const fillPercent = Math.min((ms / goalMs) * 100, 100);
+            const hours = Math.floor(ms / 3600000);
+            const mins = Math.round((ms % 3600000) / 60000);
+            const displayTime = hours > 0 ? `${hours}h` : `${mins}m`;
+            const hasActivity = ms > 0;
+
             return (
-              <div key={i} className="flex flex-col items-center gap-1 flex-1">
+              <div key={i} className="flex flex-col items-center gap-1 flex-1 group/day">
                 <div
-                  className={`w-full aspect-square rounded-md transition-colors ${
-                    done
-                      ? "bg-gradient-to-br from-amber-400 to-amber-500"
-                      : "bg-white/5 border border-white/10"
-                  } ${isToday && !done ? "ring-1 ring-amber-400/50" : ""}`}
-                />
+                  className={`w-full aspect-square rounded-md relative overflow-hidden transition-all ${
+                    isToday && !hasActivity ? "ring-1 ring-amber-400/50" : ""
+                  } ${!hasActivity ? "bg-white/5 border border-white/10" : "bg-gradient-to-br from-amber-400/30 to-amber-500/30"}`}
+                >
+                  {hasActivity && (
+                    <div
+                      className="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-500 transition-all"
+                      style={{ opacity: Math.max(Math.min(fillPercent / 100, 1), 0.4) }}
+                    />
+                  )}
+                  {hasActivity && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[9px] font-bold text-stone-900 drop-shadow-sm tabular-nums">
+                        {displayTime}
+                      </span>
+                    </div>
+                  )}
+                  {/* Hover tooltip */}
+                  {hasActivity && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-900 text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover/day:opacity-100 pointer-events-none transition-opacity z-20">
+                      {formatDuration(ms)}
+                    </div>
+                  )}
+                </div>
                 <span
                   className={`text-[10px] font-medium ${
                     isToday ? "text-amber-300" : "text-white/30"
@@ -345,86 +472,18 @@ export default function PracticeStopwatch() {
 
       {/* Goal + level */}
       <div>
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2 text-xs min-w-0">
-            <span className="text-white/50 uppercase tracking-wider font-medium">
-              Goal
-            </span>
-            <span className="text-white/90 font-semibold tabular-nums">
-              {goalMins}m
-            </span>
-            <span className="text-white/20">·</span>
-            <span className={`font-semibold ${level.color} truncate`}>
-              {level.name}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowSettings((v) => !v)}
-            aria-expanded={showSettings}
-            aria-label="Edit daily goal"
-            className={`shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors ${
-              showSettings
-                ? "bg-amber-500/20 text-amber-300"
-                : "text-white/40 hover:text-amber-300 hover:bg-white/5"
-            }`}
-          >
-            <span aria-hidden className="text-sm leading-none">⚙</span>
-          </button>
+        <div className="flex justify-center items-center gap-2 text-xs">
+          <span className="text-white/50 uppercase tracking-wider font-medium">
+            Goal
+          </span>
+          <span className="text-white/90 font-semibold tabular-nums">
+            {goalMins}m
+          </span>
+          <span className="text-white/20">·</span>
+          <span className={`font-semibold ${level.color} truncate`}>
+            {level.name}
+          </span>
         </div>
-        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-1000"
-            style={{ width: `${Math.min(progress * 100, 100)}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-[10px] text-white/40 mt-1.5 tabular-nums">
-          <span>{formatDuration(totalTodayMs)}</span>
-          <span>{goalMins}m</span>
-        </div>
-
-        {showSettings && (
-          <div className="mt-4 pt-4 border-t border-white/10">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
-                Set daily goal
-              </span>
-              <span className="text-sm font-bold text-amber-300 tabular-nums">
-                {formatDuration(goalMs)}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={GOAL_MIN_MS}
-              max={GOAL_MAX_MS}
-              step={GOAL_STEP_MS}
-              value={goalMs}
-              onChange={(e) => updateGoal(Number(e.target.value))}
-              className="w-full accent-amber-400"
-              aria-label="Daily practice goal"
-            />
-            <div className="flex gap-1.5 mt-3">
-              {[15, 30, 45, 60, 90].map((m) => {
-                const ms = m * 60000;
-                const active = ms === goalMs;
-                return (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => updateGoal(ms)}
-                    className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${
-                      active
-                        ? "bg-amber-500 text-stone-900"
-                        : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80"
-                    }`}
-                  >
-                    {m < 60 ? `${m}m` : `${m / 60}h`}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {!user && stats.totalSessions > 0 && (

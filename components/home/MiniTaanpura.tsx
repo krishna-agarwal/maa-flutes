@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 
 const SCALES = [
   { label: "C", file: "c" },
@@ -196,22 +197,14 @@ export default function MiniTaanpura() {
         <h3 className="text-white font-bold text-sm">Taanpura</h3>
         <button
           onClick={handleToggle}
-          aria-label={isPlaying ? "Stop" : "Start"}
-          className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shrink-0 ${
+          aria-label={isPlaying ? "Stop taanpura" : "Start taanpura"}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 shrink-0 font-semibold ${
             isPlaying
-              ? "bg-white/10 text-white hover:bg-white/15"
-              : "bg-amber-500 text-stone-900 hover:bg-amber-400"
+              ? "bg-white/15 text-white hover:bg-white/25"
+              : "bg-amber-500 text-stone-900 hover:bg-amber-400 shadow-sm shadow-amber-500/20"
           }`}
         >
-          {isPlaying ? (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-              <rect x="6" y="6" width="12" height="12" rx="1" />
-            </svg>
-          ) : (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          )}
+          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
         </button>
       </div>
 
@@ -320,22 +313,10 @@ export default function MiniTaanpura() {
         <button
           type="button"
           onClick={() => setVolume((v) => (v > 0 ? 0 : 0.7))}
-          aria-label={volume === 0 ? "Unmute" : "Mute"}
+          aria-label={volume === 0 ? "Unmute taanpura" : "Mute taanpura"}
           className="text-white/60 hover:text-white transition-colors shrink-0"
         >
-          {volume === 0 ? (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <line x1="22" y1="9" x2="16" y2="15" />
-              <line x1="16" y1="9" x2="22" y2="15" />
-            </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              {volume > 0.33 && <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />}
-              {volume > 0.66 && <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />}
-            </svg>
-          )}
+          {volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
         <input
           type="range"
@@ -344,7 +325,7 @@ export default function MiniTaanpura() {
           step={0.01}
           value={volume}
           onChange={(e) => setVolume(Number(e.target.value))}
-          aria-label="Volume"
+          aria-label="Taanpura volume"
           className="flex-1 h-1 accent-amber-500 cursor-pointer"
         />
         <span className="text-[10px] text-white/40 w-8 text-right tabular-nums">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Play, Pause } from "lucide-react";
 
 const NOTE_NAMES = [
   "C",
@@ -229,22 +230,14 @@ export default function MiniPitchDetector() {
           </span>
           <button
             onClick={() => (isListening ? stop() : start())}
-            aria-label={isListening ? "Stop" : "Start tuning"}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shrink-0 ${
+            aria-label={isListening ? "Stop tuner" : "Start tuner"}
+            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 shrink-0 font-semibold ${
               isListening
-                ? "bg-white/10 text-white hover:bg-white/15"
-                : "bg-amber-500 text-stone-900 hover:bg-amber-400"
+                ? "bg-white/15 text-white hover:bg-white/25"
+                : "bg-amber-500 text-stone-900 hover:bg-amber-400 shadow-sm shadow-amber-500/20"
             }`}
           >
-            {isListening ? (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <rect x="6" y="6" width="12" height="12" rx="1" />
-              </svg>
-            ) : (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
+            {isListening ? <Pause size={16} /> : <Play size={16} />}
           </button>
         </div>
       </div>

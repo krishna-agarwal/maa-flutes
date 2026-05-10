@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { Play, Pause, Minus, Plus } from "lucide-react";
 import {
   ALANKARS,
   THAATS,
@@ -189,26 +190,18 @@ export default function MiniAlankarPractice() {
         <h3 className="text-white font-bold text-sm">Alankar Practice</h3>
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-white/40">
-            {isPlaying ? "Playing…" : "Idle"}
+            {isPlaying ? "Playing…" : "Ready"}
           </span>
           <button
             onClick={() => (isPlaying ? stop() : start())}
-            aria-label={isPlaying ? "Stop" : "Start"}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 shrink-0 ${
+            aria-label={isPlaying ? "Stop alankar practice" : "Start alankar practice"}
+            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 shrink-0 font-semibold ${
               isPlaying
-                ? "bg-white/10 text-white hover:bg-white/15"
-                : "bg-amber-500 text-stone-900 hover:bg-amber-400"
+                ? "bg-white/15 text-white hover:bg-white/25"
+                : "bg-amber-500 text-stone-900 hover:bg-amber-400 shadow-sm shadow-amber-500/20"
             }`}
           >
-            {isPlaying ? (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <rect x="6" y="6" width="12" height="12" rx="1" />
-              </svg>
-            ) : (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
+            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
           </button>
         </div>
       </div>
@@ -276,10 +269,10 @@ export default function MiniAlankarPractice() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => adjustBpm(-1)}
-          aria-label="Decrease BPM"
-          className="w-8 h-8 rounded-lg bg-white/5 text-white/70 hover:bg-white/10 active:scale-95 transition-all flex items-center justify-center text-lg leading-none"
+          aria-label="Decrease BPM by 1"
+          className="w-8 h-8 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white active:scale-95 transition-all flex items-center justify-center"
         >
-          −
+          <Minus size={16} />
         </button>
         <div className="flex-1 text-center">
           <div className="flex items-baseline justify-center gap-1">
@@ -289,10 +282,10 @@ export default function MiniAlankarPractice() {
         </div>
         <button
           onClick={() => adjustBpm(1)}
-          aria-label="Increase BPM"
-          className="w-8 h-8 rounded-lg bg-white/5 text-white/70 hover:bg-white/10 active:scale-95 transition-all flex items-center justify-center text-lg leading-none"
+          aria-label="Increase BPM by 1"
+          className="w-8 h-8 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white active:scale-95 transition-all flex items-center justify-center"
         >
-          +
+          <Plus size={16} />
         </button>
       </div>
 
