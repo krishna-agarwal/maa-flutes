@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import PracticeStopwatch from "@/components/home/PracticeStopwatch";
-import MiniMetronome from "@/components/home/MiniMetronome";
-import MiniTaanpura from "@/components/home/MiniTaanpura";
-import MiniPitchDetector from "@/components/home/MiniPitchDetector";
-import MiniAlankarPractice from "@/components/home/MiniAlankarPractice";
+import { HomeHero } from "@/components/home/HomeHero";
 
 export const metadata: Metadata = {
   title: "Maa Flutes — Handcrafted Indian Classical Flutes",
@@ -15,45 +11,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      {/* Hero — Practice Zone */}
-      <section className="relative bg-gradient-to-b from-stone-950 via-stone-900 to-stone-950 overflow-hidden">
-        {/* Subtle radial glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-10">
-          {/* Header text */}
-          <div className="text-center mb-10">
-            <p className="text-amber-400 font-medium tracking-wider text-sm uppercase mb-3">
-              Your daily riyaaz
-            </p>
-            <h1 className="text-4xl lg:text-5xl font-black text-white leading-tight">
-              Practice makes <span className="text-amber-400">perfect.</span>
-            </h1>
-          </div>
-
-          {/* Tuner left · Practice center · Tools right */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start max-w-6xl mx-auto">
-            {/* Left — Tuner + Alankar Practice */}
-            <div className="flex flex-col gap-4">
-              
-              <MiniAlankarPractice />
-              <MiniMetronome />
-            </div>
-
-            {/* Center — Practice card */}
-            <div className="flex justify-center">
-              <PracticeStopwatch />
-            </div>
-
-            {/* Right — Metronome + Taanpura */}
-            <div className="flex flex-col gap-4">
-              <MiniPitchDetector />
-              
-              <MiniTaanpura />
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeHero />
 
       {/* Features */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

@@ -77,10 +77,18 @@ function scheduleNote(
   }
 }
 
-export default function MiniAlankarPractice() {
+interface MiniAlankarPracticeProps {
+  selectedScale?: string;
+}
+
+export default function MiniAlankarPractice({
+  selectedScale,
+}: MiniAlankarPracticeProps = {}) {
   const [thaatId, setThaatId] = useState<string>(THAATS[0].id);
   const [alankarId, setAlankarId] = useState<string>(ALANKARS[0].id);
-  const [saLabel, setSaLabel] = useState<SaLabel>("C");
+  const [saLabel, setSaLabel] = useState<SaLabel>(
+    (selectedScale as SaLabel) || "C"
+  );
   const [bpm, setBpm] = useState(80);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentNoteIndex, setCurrentNoteIndex] = useState(-1);
@@ -113,6 +121,11 @@ export default function MiniAlankarPractice() {
     setCurrentNoteIndex(-1);
   }, [alankar]);
   useEffect(() => { saHzRef.current = saHzFromLabel(saLabel); }, [saLabel]);
+  useEffect(() => {
+    if (selectedScale && selectedScale !== saLabel) {
+      setSaLabel(selectedScale as SaLabel);
+    }
+  }, [selectedScale, saLabel]);
 
   const scheduler = useCallback(() => {
     const ctx = audioCtxRef.current;

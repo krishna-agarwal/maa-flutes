@@ -47,8 +47,14 @@ const WAVE_FRONT = sinePath(VIZ_W, VIZ_H, 90, 5, Math.PI / 1.7);
 
 type Voice = { src: AudioBufferSourceNode; gain: GainNode };
 
-export default function MiniTaanpura() {
-  const [scale, setScale] = useState("C");
+interface MiniTaanpuraProps {
+  selectedScale?: string;
+}
+
+export default function MiniTaanpura({
+  selectedScale,
+}: MiniTaanpuraProps = {}) {
+  const [scale, setScale] = useState(selectedScale || "C");
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.7);
 
@@ -150,6 +156,12 @@ export default function MiniTaanpura() {
     };
     tick();
   }
+
+  useEffect(() => {
+    if (selectedScale && selectedScale !== scale) {
+      setScale(selectedScale);
+    }
+  }, [selectedScale, scale]);
 
   useEffect(() => {
     if (isPlaying) {

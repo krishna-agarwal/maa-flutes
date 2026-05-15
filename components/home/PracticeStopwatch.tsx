@@ -234,7 +234,7 @@ export default function PracticeStopwatch() {
   }
 
   return (
-    <div className="w-full max-w-sm bg-white/[0.03] border border-white/10 rounded-3xl p-5 sm:p-6">
+    <div className="w-full max-w-sm bg-white/[0.03] border border-white/10 rounded-2xl p-5 sm:p-3">
       {/* Header with settings button */}
       <div className="flex justify-end mb-4 relative">
         <button
