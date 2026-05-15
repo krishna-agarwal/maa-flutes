@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ShopifyProductVariant } from "@/lib/shopify/types";
 import AddToCartButton from "./AddToCartButton";
+import { createCheckoutCart } from "@/lib/shopify/storefront-client";
 
 interface VariantSelectorProps {
   variants: ShopifyProductVariant[];
@@ -12,9 +13,34 @@ export default function VariantSelector({ variants }: VariantSelectorProps) {
   const [selectedVariantId, setSelectedVariantId] = useState(
     variants[0]?.id ?? ""
   );
+  const [buyingNow, setBuyingNow] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
   const hasMultipleVariants = variants.length > 1;
+
+  const handleBuyNow = async () => {
+    setError(null);
+    if (!selectedVariant) {
+      setError("Please select a variant");
+      return;
+    }
+
+    setBuyingNow(true);
+    try {
+      const checkoutUrl = await createCheckoutCart(selectedVariantId);
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+      } else {
+        setError("Could not access checkout");
+        setBuyingNow(false);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to checkout";
+      setError(message);
+      setBuyingNow(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -68,11 +94,22 @@ export default function VariantSelector({ variants }: VariantSelectorProps) {
         </div>
       )}
 
-      {/* Add to cart */}
-      <AddToCartButton
-        variantId={selectedVariantId}
-        availableForSale={selectedVariant?.availableForSale ?? false}
-      />
+      {/* Add to cart & Buy Now */}
+      <div className="space-y-3">
+        <AddToCartButton
+          variantId={selectedVariantId}
+          availableForSale={selectedVariant?.availableForSale ?? false}
+        />
+
+        <button
+          onClick={handleBuyNow}
+          disabled={!selectedVariant?.availableForSale || buyingNow}
+          className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl transition-all duration-200 text-base tracking-wide shadow-lg shadow-amber-600/20 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {buyingNow ? "Loading..." : "Buy now"}
+        </button>
+        {error && <p className="text-red-600 text-sm">{error}</p>}
+      </div>
     </div>
   );
 }

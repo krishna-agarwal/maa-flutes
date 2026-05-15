@@ -16,6 +16,7 @@ const PRODUCT_CARD_FRAGMENT = `
   handle
   title
   vendor
+  tags
   availableForSale
   featuredImage { ${IMAGE_FRAGMENT} }
   images(first: 5) {
