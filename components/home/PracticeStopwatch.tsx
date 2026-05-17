@@ -418,7 +418,7 @@ export default function PracticeStopwatch() {
             </span>
           </span>
         </div>
-        <div className="flex items-center justify-between gap-1.5">
+        <div className="flex items-center justify-between gap-1">
           {last7Live.map((dayMs, i) => {
             const isToday = i === 6;
             const ms = typeof dayMs === "number" ? dayMs : 0;
@@ -429,9 +429,9 @@ export default function PracticeStopwatch() {
             const hasActivity = ms > 0;
 
             return (
-              <div key={i} className="flex flex-col items-center gap-1 flex-1 group/day">
+              <div key={i} className="flex flex-col items-center gap-0.5 flex-1 group/day max-w-11">
                 <div
-                  className={`w-full aspect-square rounded-md relative overflow-hidden transition-all ${
+                  className={`w-full aspect-square rounded-sm relative overflow-hidden transition-all ${
                     isToday && !hasActivity ? "ring-1 ring-amber-400/50" : ""
                   } ${!hasActivity ? "bg-white/5 border border-white/10" : "bg-gradient-to-br from-amber-400/30 to-amber-500/30"}`}
                 >
@@ -443,7 +443,7 @@ export default function PracticeStopwatch() {
                   )}
                   {hasActivity && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[9px] font-bold text-stone-900 drop-shadow-sm tabular-nums">
+                      <span className="text-[8px] font-bold text-stone-900 drop-shadow-sm tabular-nums">
                         {displayTime}
                       </span>
                     </div>
@@ -456,7 +456,7 @@ export default function PracticeStopwatch() {
                   )}
                 </div>
                 <span
-                  className={`text-[10px] font-medium ${
+                  className={`text-[9px] font-medium ${
                     isToday ? "text-amber-300" : "text-white/30"
                   }`}
                 >

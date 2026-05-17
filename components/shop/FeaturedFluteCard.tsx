@@ -15,16 +15,18 @@ export default function FeaturedFluteCard({ product }: FeaturedFluteCardProps) {
   const variantId = firstVariant?.id || "";
   const availableForSale = firstVariant?.availableForSale ?? product.availableForSale;
 
-  const { addItem, loading } = useCart();
-  const [added, setAdded] = useState(false);
+  const { addItem, isVariantInCart } = useCart();
+  const isInCart = isVariantInCart(variantId);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   async function handleAddToCart() {
+    setAddingToCart(true);
     try {
       await addItem(variantId, 1);
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
     } catch (err) {
       console.error(err);
+    } finally {
+      setAddingToCart(false);
     }
   }
 
@@ -64,16 +66,16 @@ export default function FeaturedFluteCard({ product }: FeaturedFluteCardProps) {
           {/* Button for mobile and desktop */}
           <button
             onClick={handleAddToCart}
-            disabled={loading || !availableForSale}
+            disabled={addingToCart || !availableForSale}
             className={`flex-shrink-0 px-6 py-2 rounded-lg font-semibold transition-all duration-200 whitespace-nowrap ${
               !availableForSale
                 ? "bg-stone-600 text-stone-400 cursor-not-allowed"
-                : added
+                : isInCart
                 ? "bg-green-600 text-white shadow-lg shadow-green-600/20"
                 : "bg-amber-500 hover:bg-amber-600 text-stone-900 shadow-lg shadow-amber-500/20"
             } disabled:opacity-60`}
           >
-            {!availableForSale ? "Sold out" : added ? "Added" : loading ? "Adding..." : "Add to Cart"}
+            {!availableForSale ? "Sold out" : isInCart ? "Added" : addingToCart ? "Adding..." : "Add to Cart"}
           </button>
         </div>
       </div>

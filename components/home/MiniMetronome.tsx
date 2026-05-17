@@ -96,49 +96,53 @@ export default function MiniMetronome() {
             className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 shrink-0 font-semibold ${
               isPlaying
                 ? "bg-white/15 text-white hover:bg-white/25"
-                : "bg-amber-500 text-stone-900 hover:bg-amber-400 shadow-sm shadow-amber-500/20"
+                : "bg-white/15 text-white hover:bg-white/25 shadow-sm shadow-white/20"
             }`}
           >
-            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            {isPlaying ? <Pause fill="currentColor" size={16} /> : <Play fill="currentColor" size={16} />}
           </button>
         </div>
       </div>
 
-      {/* BPM display + fine controls */}
-      <div className="flex items-center gap-3">
+      {/* BPM display */}
+      <div className="text-center">
+        <div className="flex items-baseline justify-center gap-1">
+          <span className="text-3xl font-black text-white tabular-nums">
+            {bpm}
+          </span>
+          <span className="text-xs text-white/40">BPM</span>
+        </div>
+      </div>
+
+      {/* BPM slider controls */}
+      <div className="flex items-center gap-2 -mt-2">
         <button
           onClick={() => adjustBpm(-1)}
           aria-label="Decrease BPM by 1"
-          className="w-8 h-8 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+          className="w-8 h-8 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white active:scale-95 transition-all flex items-center justify-center shrink-0"
         >
           <Minus size={16} />
         </button>
-        <div className="flex-1 text-center">
-          <div className="flex items-baseline justify-center gap-1">
-            <span className="text-3xl font-black text-white tabular-nums">
-              {bpm}
-            </span>
-            <span className="text-xs text-white/40">BPM</span>
-          </div>
-        </div>
+        <input
+          type="range"
+          min={MIN_BPM}
+          max={MAX_BPM}
+          value={bpm}
+          onChange={(e) => setBpm(Number(e.target.value))}
+          aria-label="BPM"
+          className="flex-1 accent-amber-500 h-1"
+          style={{
+            WebkitAppearance: 'slider-horizontal',
+          }}
+        />
         <button
           onClick={() => adjustBpm(1)}
           aria-label="Increase BPM by 1"
-          className="w-8 h-8 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+          className="w-8 h-8 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white active:scale-95 transition-all flex items-center justify-center shrink-0"
         >
           <Plus size={16} />
         </button>
       </div>
-
-      <input
-        type="range"
-        min={MIN_BPM}
-        max={MAX_BPM}
-        value={bpm}
-        onChange={(e) => setBpm(Number(e.target.value))}
-        aria-label="BPM"
-        className="w-full accent-amber-500"
-      />
 
       {/* 4-beat indicator */}
       <div className="flex justify-center items-center gap-6 h-6">
@@ -164,7 +168,7 @@ export default function MiniMetronome() {
 
       {/* Quick BPM presets */}
       <div className="flex gap-1.5">
-        {[60, 80, 100, 120].map((b) => (
+        {[60, 120, 180, 240].map((b) => (
           <button
             key={b}
             onClick={() => setBpm(b)}

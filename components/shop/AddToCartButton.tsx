@@ -12,20 +12,22 @@ export default function AddToCartButton({
   variantId,
   availableForSale,
 }: AddToCartButtonProps) {
-  const { addItem, loading } = useCart();
-  const [added, setAdded] = useState(false);
+  const { addItem, isVariantInCart } = useCart();
+  const isInCart = isVariantInCart(variantId);
+  const [addingToCart, setAddingToCart] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleAddToCart() {
     setError(null);
+    setAddingToCart(true);
     try {
       await addItem(variantId, 1);
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to add to cart";
       setError(message);
       setTimeout(() => setError(null), 4000);
+    } finally {
+      setAddingToCart(false);
     }
   }
 
@@ -44,14 +46,14 @@ export default function AddToCartButton({
     <div>
       <button
         onClick={handleAddToCart}
-        disabled={loading}
+        disabled={addingToCart}
         className={`w-full py-4 font-semibold rounded-xl transition-all duration-200 text-base tracking-wide ${
-          added
+          isInCart
             ? "bg-green-600 text-white shadow-lg shadow-green-600/20"
             : "bg-stone-900 hover:bg-stone-800 text-white shadow-lg shadow-stone-900/20"
         } disabled:opacity-60`}
       >
-        {added ? "Added to cart" : loading ? "Adding..." : "Add to cart"}
+        {isInCart ? "Added to cart" : addingToCart ? "Adding..." : "Add to cart"}
       </button>
       {error && (
         <p className="mt-2 text-red-600 text-sm">{error}</p>

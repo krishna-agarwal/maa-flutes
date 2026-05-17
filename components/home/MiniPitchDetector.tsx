@@ -234,10 +234,10 @@ export default function MiniPitchDetector() {
             className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all active:scale-95 shrink-0 font-semibold ${
               isListening
                 ? "bg-white/15 text-white hover:bg-white/25"
-                : "bg-amber-500 text-stone-900 hover:bg-amber-400 shadow-sm shadow-amber-500/20"
+                : "bg-white/15 text-white hover:bg-white/25 shadow-sm shadow-white/20"
             }`}
           >
-            {isListening ? <Pause size={16} /> : <Play size={16} />}
+            {isListening ? <Pause fill="currentColor" size={16} /> : <Play fill="currentColor" size={16} />}
           </button>
         </div>
       </div>

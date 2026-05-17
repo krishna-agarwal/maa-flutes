@@ -54,8 +54,23 @@ export function HomeHero() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start  mx-auto">
           {/* Left — Alankar Practice + Metronome */}
           <div className="flex flex-col gap-4">
-            <MiniAlankarPractice selectedScale={selectedScale} />
-            <MiniMetronome />
+            <MiniPitchDetector />
+
+            <MiniTaanpura selectedScale={selectedScale} />
+
+            {/* Live Classes Contact Card */}
+            <a
+              href="https://wa.me/912027308131"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-3 flex items-center justify-between gap-3 transition-all hover:bg-white/10 active:scale-95"
+            >
+              <div>
+                <p className="text-white font-bold text-sm leading-tight">Live Classes</p>
+                <p className="text-white/70 text-xs">Contact Us</p>
+              </div>
+              <img src="/whatsapp.png" alt="WhatsApp" className="w-5 h-5 flex-shrink-0" />
+            </a>
           </div>
 
           {/* Center — Practice card */}
@@ -65,8 +80,10 @@ export function HomeHero() {
 
           {/* Right — Pitch Detector + Taanpura */}
           <div className="flex flex-col gap-4">
-            <MiniPitchDetector />
-            <MiniTaanpura selectedScale={selectedScale} />
+            
+            <MiniMetronome />
+            
+            <MiniAlankarPractice selectedScale={selectedScale} />
           </div>
         </div>
       </div>

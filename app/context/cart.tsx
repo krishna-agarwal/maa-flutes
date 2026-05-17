@@ -77,6 +77,7 @@ interface CartContextValue {
   updateItem: (lineId: string, quantity: number) => Promise<void>;
   removeItem: (lineId: string) => Promise<void>;
   getCheckoutUrl: () => Promise<string | null>;
+  isVariantInCart: (variantId: string) => boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -143,6 +144,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cart?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cartCount = cart?.totalQuantity ?? 0;
+
+  const isVariantInCart = useCallback((variantId: string): boolean => {
+    return cart?.lines.edges.some(({ node }) => node.merchandise.id === variantId) ?? false;
+  }, [cart]);
 
   const addItem = useCallback(
     async (variantId: string, quantity = 1) => {
@@ -303,7 +308,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ cart, cartCount, loading, addItem, updateItem, removeItem, getCheckoutUrl }}
+      value={{ cart, cartCount, loading, addItem, updateItem, removeItem, getCheckoutUrl, isVariantInCart }}
     >
       {children}
     </CartContext.Provider>

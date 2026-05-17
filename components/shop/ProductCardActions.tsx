@@ -13,8 +13,8 @@ export default function ProductCardActions({
   variantId,
   availableForSale,
 }: ProductCardActionsProps) {
-  const { addItem } = useCart();
-  const [added, setAdded] = useState(false);
+  const { addItem, isVariantInCart } = useCart();
+  const isInCart = variantId ? isVariantInCart(variantId) : false;
   const [addingToCart, setAddingToCart] = useState(false);
   const [buyingNow, setBuyingNow] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +32,6 @@ export default function ProductCardActions({
     setAddingToCart(true);
     try {
       await addItem(variantId, 1);
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to add to cart";
       setError(message);
@@ -87,12 +85,12 @@ export default function ProductCardActions({
         onClick={handleAddToCart}
         disabled={addingToCart || buyingNow}
         className={`w-full py-2 font-semibold rounded-lg transition-all duration-200 text-xs tracking-wide cursor-pointer ${
-          added
+          isInCart
             ? "bg-green-600 text-white shadow-lg shadow-green-600/20"
             : "bg-stone-900 hover:bg-stone-800 text-white shadow-lg shadow-stone-900/20"
         } disabled:opacity-60 disabled:cursor-not-allowed`}
       >
-        {added ? "Added!" : addingToCart ? "Adding..." : "Add to cart"}
+        {isInCart ? "Added!" : addingToCart ? "Adding..." : "Add to cart"}
       </button>
 
       <button
