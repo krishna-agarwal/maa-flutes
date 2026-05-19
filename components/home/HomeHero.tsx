@@ -60,7 +60,7 @@ export function HomeHero() {
 
             {/* Live Classes Contact Card */}
             <a
-              href="https://wa.me/912027308131"
+              href="https://wa.me/919027308131"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-3 flex items-center justify-between gap-3 transition-all hover:bg-white/10 active:scale-95"
