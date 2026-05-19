@@ -26,9 +26,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: product.title,
     description: product.description.slice(0, 160),
     openGraph: {
+      title: product.title,
+      description: product.description.slice(0, 160),
+      type: "website",
+      url: `/shop/product/${handle}`,
       images: product.featuredImage
         ? [{ url: product.featuredImage.url, alt: product.title }]
         : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.title,
+      description: product.description.slice(0, 160),
+      images: product.featuredImage ? [product.featuredImage.url] : [],
     },
   };
 }

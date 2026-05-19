@@ -20,9 +20,21 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const mod = await import(`@/content/blog/${slug}.mdx`);
+    const { title, description } = mod.metadata;
     return {
-      title: mod.metadata.title,
-      description: mod.metadata.description,
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "article",
+        url: `/blog/${slug}`,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+      },
     };
   } catch {
     return { title: "Post not found" };

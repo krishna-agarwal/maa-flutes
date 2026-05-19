@@ -2,6 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HomeHero } from "@/components/home/HomeHero";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Maa Flutes",
+  description:
+    "Handcrafted Indian classical flutes, music tools, and courses for every level of player.",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://maaflutes.com",
+  logo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://maaflutes.com"}/logo.png`,
+  sameAs: [],
+  offers: {
+    "@type": "AggregateOffer",
+    itemCondition: "https://schema.org/NewCondition",
+    availability: "https://schema.org/InStock",
+    priceCurrency: "INR",
+  },
+};
+
 export const metadata: Metadata = {
   title: "Maa Flutes — Handcrafted Indian Classical Flutes",
   description:
@@ -11,6 +28,10 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <HomeHero />
 
       {/* Features */}

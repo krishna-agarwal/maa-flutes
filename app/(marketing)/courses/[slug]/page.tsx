@@ -25,9 +25,21 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const mod = await import(`@/content/courses/${slug}.mdx`);
+    const { title, description } = mod.metadata;
     return {
-      title: mod.metadata.title,
-      description: mod.metadata.description,
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        url: `/courses/${slug}`,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+      },
     };
   } catch {
     return { title: "Course not found" };
