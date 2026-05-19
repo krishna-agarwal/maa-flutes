@@ -343,7 +343,7 @@ export default function PracticeStopwatch() {
               onClick={handleStart}
               className="flex-1 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold rounded-xl transition-all text-sm shadow-md shadow-amber-500/20 active:scale-95 flex items-center justify-center gap-2"
             >
-              <Play size={16} />
+              <Play fill="" size={16} />
               {elapsed > 0 ? "Resume" : "Start"}
             </button>
           ) : (

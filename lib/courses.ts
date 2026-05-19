@@ -1,6 +1,3 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-
 export type CourseType =
   | "free-youtube"
   | "members-youtube"
@@ -25,13 +22,18 @@ export type CourseMeta = {
   price?: string;
 };
 
-const COURSES_DIR = path.join(process.cwd(), "content", "courses");
+// Static list — add a slug here whenever a new content/courses/*.mdx file is created.
+// fs.readdir is not available in the Cloudflare Workers edge runtime.
+const COURSE_SLUGS = [
+  "bansuri-foundations-hindi",
+  "zero-to-pro-bansuri-course",
+  "beginner-level-flute-course-members",
+  "advanced-swar-shifting-members",
+  "ornamentation-course-members",
+] as const;
 
 export async function getAllCourseSlugs(): Promise<string[]> {
-  const files = await fs.readdir(COURSES_DIR);
-  return files
-    .filter((f) => f.endsWith(".mdx"))
-    .map((f) => f.replace(/\.mdx$/, ""));
+  return [...COURSE_SLUGS];
 }
 
 export async function getCourseMeta(slug: string): Promise<CourseMeta> {
