@@ -220,22 +220,10 @@ export default async function CoursesIndexPage() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-3 gap-10 lg:gap-12">
           {/* Free playlists — main column */}
           <div className="lg:col-span-2 min-w-0">
-            {/* <div className="mb-10">
-              <p className="text-emerald-700 font-semibold tracking-wider text-xs uppercase mb-2">
-                Watch free now
-              </p>
-              <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-3">
-                Free lessons on YouTube
-              </h2>
-              <p className="text-stone-600 text-lg max-w-xl">
-                Watch every lesson directly on this page — no signup, no fees,
-                no ads in your way.
-              </p>
-            </div> */}
 
             <div className="space-y-16">
               {freeCourses.map((course) => (
