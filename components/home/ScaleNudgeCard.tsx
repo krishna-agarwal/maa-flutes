@@ -79,7 +79,8 @@ export function ScaleNudgeCard({
                 <span className="text-sm font-bold text-amber-300">
                   ₹{Number(product.priceRange.minVariantPrice.amount).toLocaleString("en-IN")}
                 </span>
-                {product.compareAtPriceRange?.minVariantPrice && (
+                {product.compareAtPriceRange?.minVariantPrice &&
+                Number(product.compareAtPriceRange.minVariantPrice.amount) > 0 && (
                   <span className="text-[9px] text-white/40 line-through">
                     ₹
                     {Number(

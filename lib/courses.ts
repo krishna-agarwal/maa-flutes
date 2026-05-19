@@ -20,6 +20,7 @@ export type CourseMeta = {
   coverImage?: string;
   type: CourseType;
   playlistId?: string;
+  firstVideoId?: string;
   externalUrl?: string;
   price?: string;
 };

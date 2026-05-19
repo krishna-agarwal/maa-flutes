@@ -158,10 +158,8 @@ export default function MiniTaanpura({
   }
 
   useEffect(() => {
-    if (selectedScale && selectedScale !== scale) {
-      setScale(selectedScale);
-    }
-  }, [selectedScale, scale]);
+    if (selectedScale) setScale(selectedScale);
+  }, [selectedScale]);
 
   useEffect(() => {
     if (isPlaying) {

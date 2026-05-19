@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllCourses, type CourseMeta } from "@/lib/courses";
-import YouTubePlaylistEmbed from "@/components/courses/YouTubePlaylistEmbed";
+import { getPlaylistVideos } from "@/lib/youtube";
+import YouTubePlaylistPlayer from "@/components/courses/YouTubePlaylistPlayer";
 
 export const metadata: Metadata = {
   title: "Courses — Learn the bansuri at your pace",
@@ -134,7 +135,9 @@ function MembersCourseCard({ course }: { course: CourseMeta }) {
   );
 }
 
-function FreeCourseBlock({ course }: { course: CourseMeta }) {
+async function FreeCourseBlock({ course }: { course: CourseMeta }) {
+  const videos = course.playlistId ? await getPlaylistVideos(course.playlistId) : [];
+
   return (
     <article>
       <div className="flex items-center gap-3 mb-3">
@@ -156,27 +159,31 @@ function FreeCourseBlock({ course }: { course: CourseMeta }) {
         {course.description}
       </p>
 
-      {course.playlistId && (
-        <YouTubePlaylistEmbed
-          playlistId={course.playlistId}
+      {videos.length > 0 ? (
+        <YouTubePlaylistPlayer
+          videos={videos}
+          defaultVideoId={course.firstVideoId}
           title={course.title}
         />
-      )}
-
-      <div className="mt-4 flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3 text-xs text-stone-500">
-          <span>Taught by {course.instructor}</span>
-          <span className="w-1 h-1 rounded-full bg-stone-300" />
-          <span>{course.language}</span>
-          <span className="w-1 h-1 rounded-full bg-stone-300" />
-          <span>{course.duration}</span>
+      ) : course.playlistId ? (
+        <div className="aspect-video rounded-2xl overflow-hidden border border-stone-200 bg-stone-950 shadow-sm">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(course.playlistId)}`}
+            title={course.title}
+            loading="lazy"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            className="w-full h-full"
+          />
         </div>
-        <Link
-          href={`/courses/${course.slug}`}
-          className="text-sm font-semibold text-amber-700 hover:text-amber-800"
-        >
-          Course details & syllabus →
-        </Link>
+      ) : null}
+
+      <div className="mt-4 flex items-center gap-3 text-xs text-stone-500">
+        <span>Taught by {course.instructor}</span>
+        <span className="w-1 h-1 rounded-full bg-stone-300" />
+        <span>{course.language}</span>
+        <span className="w-1 h-1 rounded-full bg-stone-300" />
+        <span>{course.duration}</span>
       </div>
     </article>
   );
@@ -190,27 +197,34 @@ export default async function CoursesIndexPage() {
 
   return (
     <>
-      <section className="bg-gradient-to-b from-stone-950 via-stone-900 to-stone-900 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-          <p className="text-amber-400 font-medium tracking-wider text-sm uppercase mb-3">
-            Maa Flutes Courses
-          </p>
-          <h1 className="text-4xl lg:text-5xl font-black leading-tight mb-4 max-w-3xl">
-            Learn the bansuri,{" "}
-            <span className="text-amber-400">at your pace.</span>
-          </h1>
-          <p className="text-stone-300 text-lg max-w-2xl">
-            Free YouTube lessons and an in-depth paid course with Amit, taught
-            in Hindi for students at every level.
-          </p>
+      <section className="relative bg-stone-950 text-white overflow-hidden">
+
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center py-8 sm:py-10 lg:py-12">
+            {/* Text */}
+            <div>
+              {/* <p className="text-amber-400 font-medium text-xs tracking-widest uppercase mb-2">
+                Handcrafted in India
+              </p> */}
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+              Learn the bansuri,{" "}
+              <span className="text-amber-400">at your pace.</span>
+              </h1>
+              <p className="mt-3 text-stone-300 max-w-lg text-sm leading-relaxed">
+              Free YouTube lessons and an in-depth paid course with Amit, taught
+              in Hindi for students at every level.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid lg:grid-cols-3 gap-10 lg:gap-12">
           {/* Free playlists — main column */}
-          <div className="lg:col-span-2">
-            <div className="mb-10">
+          <div className="lg:col-span-2 min-w-0">
+            {/* <div className="mb-10">
               <p className="text-emerald-700 font-semibold tracking-wider text-xs uppercase mb-2">
                 Watch free now
               </p>
@@ -221,7 +235,7 @@ export default async function CoursesIndexPage() {
                 Watch every lesson directly on this page — no signup, no fees,
                 no ads in your way.
               </p>
-            </div>
+            </div> */}
 
             <div className="space-y-16">
               {freeCourses.map((course) => (

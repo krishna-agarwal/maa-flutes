@@ -122,10 +122,8 @@ export default function MiniAlankarPractice({
   }, [alankar]);
   useEffect(() => { saHzRef.current = saHzFromLabel(saLabel); }, [saLabel]);
   useEffect(() => {
-    if (selectedScale && selectedScale !== saLabel) {
-      setSaLabel(selectedScale as SaLabel);
-    }
-  }, [selectedScale, saLabel]);
+    if (selectedScale) setSaLabel(selectedScale as SaLabel);
+  }, [selectedScale]);
 
   const scheduler = useCallback(() => {
     const ctx = audioCtxRef.current;

@@ -234,7 +234,7 @@ export default function PracticeStopwatch() {
   }
 
   return (
-    <div className="w-full max-w-sm bg-white/[0.03] border border-white/10 rounded-2xl p-5 sm:p-3">
+    <div className="w-full max-w-sm bg-white/[0.03] border border-white/10 rounded-2xl p-3 sm:p-5">
       {/* Header with settings button */}
       <div className="flex justify-end mb-4 relative">
         <button
@@ -494,6 +494,7 @@ export default function PracticeStopwatch() {
           to save across devices
         </p>
       )}
+
     </div>
   );
 }

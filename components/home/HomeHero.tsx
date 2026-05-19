@@ -53,7 +53,7 @@ export function HomeHero() {
         {/* Tools section — unchanged 3 column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start  mx-auto">
           {/* Left — Alankar Practice + Metronome */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 order-2 lg:order-1">
             <MiniPitchDetector />
 
             <MiniTaanpura selectedScale={selectedScale} />
@@ -74,12 +74,12 @@ export function HomeHero() {
           </div>
 
           {/* Center — Practice card */}
-          <div className="flex justify-center">
+          <div className="flex justify-center order-1 lg:order-2">
             <PracticeStopwatch />
           </div>
 
           {/* Right — Pitch Detector + Taanpura */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 order-3">
             
             <MiniMetronome />
             
