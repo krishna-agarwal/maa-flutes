@@ -1,6 +1,3 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-
 export type BlogPostMeta = {
   slug: string;
   title: string;
@@ -12,13 +9,17 @@ export type BlogPostMeta = {
   coverEmoji: string;
 };
 
-const BLOG_DIR = path.join(process.cwd(), "content", "blog");
+// Static list — add a slug here whenever a new content/blog/*.mdx file is created.
+// fs.readdir is not available in the Cloudflare Workers edge runtime.
+const POST_SLUGS = [
+  "understanding-ragas-on-the-bansuri",
+  "choosing-your-first-bansuri",
+  "breath-control-and-tone-production",
+  "care-and-seasoning-of-bamboo-flutes",
+] as const;
 
 export async function getAllPostSlugs(): Promise<string[]> {
-  const files = await fs.readdir(BLOG_DIR);
-  return files
-    .filter((f) => f.endsWith(".mdx"))
-    .map((f) => f.replace(/\.mdx$/, ""));
+  return [...POST_SLUGS];
 }
 
 export async function getPostMeta(slug: string): Promise<BlogPostMeta> {
