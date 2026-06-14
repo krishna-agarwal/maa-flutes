@@ -374,7 +374,7 @@ export default function PracticeStopwatch() {
       <div className="flex items-center justify-center gap-4 text-sm">
         <div className="flex items-baseline gap-1.5">
           <span className="text-white font-semibold tabular-nums">
-            {formatDuration(stats.todayMs + (running ? elapsed : 0))}
+            {formatDuration(totalTodayMs)}
           </span>
           <span className="text-[10px] text-white/40 uppercase tracking-wider">
             today

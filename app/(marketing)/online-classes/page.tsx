@@ -88,7 +88,7 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* 3 Level Structured Course */}
-      <section className="bg-stone-50">
+      {/* <section className="bg-stone-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-stone-900 mb-4">
@@ -206,7 +206,7 @@ export default function OnlineClassesPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Course Details */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

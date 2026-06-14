@@ -42,6 +42,14 @@ export const THAATS: readonly Thaat[] = [
 const n = (idx: SwaraIdx, octave: -1 | 0 | 1 = 0): SwaraNote => ({ idx, octave });
 const seq = (...notes: SwaraNote[]): SwaraNote[] => notes;
 
+// Combine an ascending phrase with its descent: play up to the peak, then
+// the full mirror back down. The peak sounds twice (top of ascent + start of
+// descent), while the starting swara stays single so the loop seam stays clean.
+const mirror = (asc: SwaraNote[]): SwaraNote[] => [
+  ...asc,
+  ...[...asc].reverse().slice(0, -1),
+];
+
 const lo_P = n(4, -1);
 const lo_D = n(5, -1);
 const lo_N = n(6, -1);
@@ -58,111 +66,73 @@ const hi_G = n(2, 1);
 
 export const ALANKARS: readonly Alankar[] = [
   {
-    id: "aroh",
-    name: "Aroh (ascend)",
-    pattern: seq(S, R, G, M, P, D, N, hi_S),
-  },
-  {
-    id: "avaroh",
-    name: "Avaroh (descend)",
-    pattern: seq(hi_S, N, D, P, M, G, R, S),
-  },
-  {
     id: "aroh-avaroh",
-    name: "Aroh + Avaroh",
-    pattern: seq(S, R, G, M, P, D, N, hi_S, N, D, P, M, G, R, S),
+    name: "Aroh–Avaroh (ascend + descend)",
+    pattern: mirror(seq(S, R, G, M, P, D, N, hi_S)),
   },
   {
-    id: "pairs-up",
-    name: "Pairs ascending — SR RG GM …",
-    pattern: seq(S, R, R, G, G, M, M, P, P, D, D, N, N, hi_S),
+    id: "pairs",
+    name: "Pairs — SR RG GM … (up & down)",
+    pattern: mirror(seq(S, R, R, G, G, M, M, P, P, D, D, N, N, hi_S)),
   },
   {
-    id: "pairs-down",
-    name: "Pairs descending — S'N ND DP …",
-    pattern: seq(hi_S, N, N, D, D, P, P, M, M, G, G, R, R, S),
-  },
-  {
-    id: "triplets-up",
-    name: "Triplets ascending — SRG RGM …",
-    pattern: seq(
-      S, R, G,
-      R, G, M,
-      G, M, P,
-      M, P, D,
-      P, D, N,
-      D, N, hi_S,
+    id: "triplets",
+    name: "Triplets — SRG RGM … (up & down)",
+    pattern: mirror(
+      seq(
+        S, R, G,
+        R, G, M,
+        G, M, P,
+        M, P, D,
+        P, D, N,
+        D, N, hi_S,
+      ),
     ),
   },
   {
-    id: "triplets-down",
-    name: "Triplets descending — S'ND NDP …",
-    pattern: seq(
-      hi_S, N, D,
-      N, D, P,
-      D, P, M,
-      P, M, G,
-      M, G, R,
-      G, R, S,
+    id: "fours",
+    name: "Four-note — SRGM RGMP … (up & down)",
+    pattern: mirror(
+      seq(
+        S, R, G, M,
+        R, G, M, P,
+        G, M, P, D,
+        M, P, D, N,
+        P, D, N, hi_S,
+      ),
     ),
   },
   {
-    id: "fours-up",
-    name: "Four-note ascending — SRGM RGMP …",
-    pattern: seq(
-      S, R, G, M,
-      R, G, M, P,
-      G, M, P, D,
-      M, P, D, N,
-      P, D, N, hi_S,
+    id: "fives",
+    name: "Five-note — SRGMP RGMPD … (up & down)",
+    pattern: mirror(
+      seq(
+        S, R, G, M, P,
+        R, G, M, P, D,
+        G, M, P, D, N,
+        M, P, D, N, hi_S,
+      ),
     ),
   },
   {
-    id: "fours-down",
-    name: "Four-note descending — S'NDP NDPM …",
-    pattern: seq(
-      hi_S, N, D, P,
-      N, D, P, M,
-      D, P, M, G,
-      P, M, G, R,
-      M, G, R, S,
+    id: "sixes",
+    name: "Six-note — SRGMPD … (up & down)",
+    pattern: mirror(
+      seq(
+        S, R, G, M, P, D,
+        R, G, M, P, D, N,
+        G, M, P, D, N, hi_S,
+      ),
     ),
   },
   {
-    id: "fives-up",
-    name: "Five-note ascending — SRGMP RGMPD …",
-    pattern: seq(
-      S, R, G, M, P,
-      R, G, M, P, D,
-      G, M, P, D, N,
-      M, P, D, N, hi_S,
-    ),
-  },
-  {
-    id: "fives-down",
-    name: "Five-note descending",
-    pattern: seq(
-      hi_S, N, D, P, M,
-      N, D, P, M, G,
-      D, P, M, G, R,
-      P, M, G, R, S,
-    ),
-  },
-  {
-    id: "sixes-up",
-    name: "Six-note ascending",
-    pattern: seq(
-      S, R, G, M, P, D,
-      R, G, M, P, D, N,
-      G, M, P, D, N, hi_S,
-    ),
-  },
-  {
-    id: "sevens-up",
-    name: "Seven-note ascending",
-    pattern: seq(
-      S, R, G, M, P, D, N,
-      R, G, M, P, D, N, hi_S,
+    id: "sevens",
+    name: "Seven-note — SRGMPDN … (up & down)",
+    pattern: mirror(
+      seq(
+        S, R, G, M, P, D, N,
+        R, G, M, P, D, N, hi_S,
+      ),
     ),
   },
   {
@@ -210,27 +180,17 @@ export const ALANKARS: readonly Alankar[] = [
     ),
   },
   {
-    id: "skip-thirds-up",
-    name: "Thirds ascending — SG RM GP …",
-    pattern: seq(
-      S, G,
-      R, M,
-      G, P,
-      M, D,
-      P, N,
-      D, hi_S,
-    ),
-  },
-  {
-    id: "skip-thirds-down",
-    name: "Thirds descending — S'D NP DM …",
-    pattern: seq(
-      hi_S, D,
-      N, P,
-      D, M,
-      P, G,
-      M, R,
-      G, S,
+    id: "skip-thirds",
+    name: "Thirds — SG RM GP … (up & down)",
+    pattern: mirror(
+      seq(
+        S, G,
+        R, M,
+        G, P,
+        M, D,
+        P, N,
+        D, hi_S,
+      ),
     ),
   },
   {
@@ -311,21 +271,17 @@ export const ALANKARS: readonly Alankar[] = [
     ),
   },
   {
-    id: "pakad-asc",
-    name: "Pakad-style asc — SRG SRGM SRGMP",
+    id: "pakad",
+    name: "Pakad-style — SRG SRGM … (up & down)",
     pattern: seq(
+      // ascending build-up to the peak
       S, R, G,
       S, R, G, M,
       S, R, G, M, P,
       S, R, G, M, P, D,
       S, R, G, M, P, D, N,
       S, R, G, M, P, D, N, hi_S,
-    ),
-  },
-  {
-    id: "pakad-desc",
-    name: "Pakad-style desc — S'ND, S'NDP, …",
-    pattern: seq(
+      // descending wind-down (peak sounds again to start the descent)
       hi_S, N, D,
       hi_S, N, D, P,
       hi_S, N, D, P, M,
