@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Courses — Learn the bansuri at your pace",
   description:
     "Free YouTube lessons and in-depth paid courses on the Indian bamboo flute, taught by Amit in Hindi for students at every level.",
+  alternates: {
+    canonical: "/courses",
+  },
 };
 
 function PaidCourseCard({ course }: { course: CourseMeta }) {

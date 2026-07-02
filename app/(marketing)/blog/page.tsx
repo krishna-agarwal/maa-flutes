@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Blog — Bansuri articles, technique & tradition",
   description:
     "Articles on the Indian bamboo flute — choosing your first bansuri, care and seasoning, ragas, breath technique, and the living tradition of Hindustani music.",
+  alternates: {
+    canonical: "/blog",
+  },
 };
 
 export default async function BlogIndexPage() {

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPostSlugs, getAllPosts, formatDate } from "@/lib/blog";
+import type { BlogPostMeta } from "@/lib/blog";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://maaflutes.com";
 
 type Params = { slug: string };
 
@@ -20,15 +23,22 @@ export async function generateMetadata({
   const { slug } = await params;
   try {
     const mod = await import(`@/content/blog/${slug}.mdx`);
-    const { title, description } = mod.metadata;
+    const { title, description, date, author, tag } =
+      mod.metadata as BlogPostMeta;
     return {
       title,
       description,
+      alternates: {
+        canonical: `/blog/${slug}`,
+      },
       openGraph: {
         title,
         description,
         type: "article",
         url: `/blog/${slug}`,
+        publishedTime: date,
+        authors: [author],
+        tags: tag ? [tag] : undefined,
       },
       twitter: {
         card: "summary_large_image",
@@ -61,8 +71,35 @@ export default async function BlogPostPage({
   const all = await getAllPosts();
   const related = all.filter((p) => p.slug !== slug).slice(0, 2);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: meta.title,
+    description: meta.description,
+    datePublished: meta.date,
+    dateModified: meta.date,
+    author: { "@type": "Person", name: meta.author },
+    publisher: {
+      "@type": "Organization",
+      name: "Maa Flutes",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${siteUrl}/blog/${slug}`,
+    },
+    ...(meta.tag && { keywords: meta.tag }),
+  };
+
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="bg-gradient-to-b from-stone-950 via-stone-900 to-stone-900 text-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
           <Link

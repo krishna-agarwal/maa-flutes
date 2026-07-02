@@ -6,6 +6,9 @@ import {
   usePractice,
   formatStopwatch,
   formatDuration,
+  saveDraftSession,
+  loadDraftSession,
+  clearDraftSession,
   GOAL_MIN_MS,
   GOAL_MAX_MS,
 } from "@/lib/practice";
@@ -18,11 +21,16 @@ const GOAL_STEP_MS = 5 * 60 * 1000;
 const RADIUS = 140;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+// Mini day-ring constants
+const HISTORY_DAYS = 7;
+const MINI_RADIUS = 15;
+const MINI_CIRCUMFERENCE = 2 * Math.PI * MINI_RADIUS;
+
 // Weekday letters, oldest → newest relative to today
-function last7DayLabels(): string[] {
+function lastNDayLabels(days: number): string[] {
   const letters = ["S", "M", "T", "W", "T", "F", "S"];
   const labels: string[] = [];
-  for (let i = 6; i >= 0; i--) {
+  for (let i = days - 1; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86400000);
     labels.push(letters[d.getDay()]);
   }
@@ -129,6 +137,82 @@ function ProgressRing({
   );
 }
 
+// Compact per-day ring for the history strip — fills toward the daily goal,
+// with the day's practice time shown in the center
+function MiniDayRing({
+  ms,
+  goalMs,
+  isToday,
+  label,
+}: {
+  ms: number;
+  goalMs: number;
+  isToday: boolean;
+  label: string;
+}) {
+  const hasActivity = ms > 0;
+  const fill = Math.min(ms / goalMs, 1);
+  const offset = MINI_CIRCUMFERENCE * (1 - fill);
+
+  const hours = Math.floor(ms / 3600000);
+  const mins = Math.round((ms % 3600000) / 60000);
+  const centerText = hasActivity ? (hours > 0 ? `${hours}h` : `${mins}m`) : "";
+
+  return (
+    <div className="flex flex-col items-center gap-1 group/day">
+      <div className="relative w-full aspect-square">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
+          <circle
+            cx="20"
+            cy="20"
+            r={MINI_RADIUS}
+            fill="none"
+            stroke="currentColor"
+            className={isToday ? "text-amber-400/25" : "text-white/10"}
+            strokeWidth="4"
+          />
+          {hasActivity && (
+            <circle
+              cx="20"
+              cy="20"
+              r={MINI_RADIUS}
+              fill="none"
+              stroke="url(#progressGradient)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeDasharray={MINI_CIRCUMFERENCE}
+              strokeDashoffset={offset}
+              className="transition-[stroke-dashoffset] duration-700 ease-out"
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span
+            className={`text-[9px] font-bold tabular-nums ${
+              hasActivity ? "text-white" : "text-white/25"
+            }`}
+          >
+            {centerText || "·"}
+          </span>
+        </div>
+        {/* Hover tooltip with exact time */}
+        {hasActivity && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-stone-900 text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover/day:opacity-100 pointer-events-none transition-opacity z-20">
+            {formatDuration(ms)}
+          </div>
+        )}
+      </div>
+      <span
+        className={`text-[9px] font-medium tabular-nums ${
+          isToday ? "text-amber-300" : "text-white/30"
+        }`}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
 export default function PracticeStopwatch() {
   const { stats, sessions, user, loading, goalMs, logSession, updateGoal } = usePractice();
 
@@ -139,15 +223,34 @@ export default function PracticeStopwatch() {
 
   const startTimeRef = useRef<number | null>(null);
   const frameRef = useRef<number | null>(null);
+  const lastPersistRef = useRef(0);
+
+  // Current elapsed, accurate even between animation frames
+  const currentElapsed = useCallback(
+    () =>
+      startTimeRef.current != null
+        ? performance.now() - startTimeRef.current
+        : elapsed,
+    [elapsed],
+  );
 
   const tick = useCallback(() => {
     if (!startTimeRef.current) return;
-    setElapsed(performance.now() - startTimeRef.current);
+    const now = performance.now();
+    const value = now - startTimeRef.current;
+    setElapsed(value);
+    // Persist an in-progress draft roughly every 5s so the time survives a
+    // refresh / tab close even without clicking "Done"
+    if (now - lastPersistRef.current > 5000) {
+      lastPersistRef.current = now;
+      saveDraftSession(value);
+    }
     frameRef.current = requestAnimationFrame(tick);
   }, []);
 
   const handleStart = useCallback(() => {
     startTimeRef.current = performance.now() - elapsed;
+    lastPersistRef.current = performance.now();
     setRunning(true);
     frameRef.current = requestAnimationFrame(tick);
   }, [elapsed, tick]);
@@ -155,19 +258,49 @@ export default function PracticeStopwatch() {
   const handlePause = useCallback(() => {
     if (frameRef.current) cancelAnimationFrame(frameRef.current);
     setRunning(false);
-  }, []);
+    // Snapshot the accumulated time so it isn't lost while paused
+    const value = currentElapsed();
+    setElapsed(value);
+    startTimeRef.current = null;
+    saveDraftSession(value);
+  }, [currentElapsed]);
 
   const handleReset = useCallback(() => {
     if (frameRef.current) cancelAnimationFrame(frameRef.current);
     setRunning(false);
 
-    if (elapsed > 5000) {
-      logSession(elapsed);
+    const value = currentElapsed();
+    if (value > 5000) {
+      logSession(value);
     }
 
     setElapsed(0);
     startTimeRef.current = null;
-  }, [elapsed, logSession]);
+    clearDraftSession();
+  }, [currentElapsed, logSession]);
+
+  // Restore an in-progress draft on mount (e.g. after a refresh / tab close)
+  useEffect(() => {
+    const draft = loadDraftSession();
+    if (draft > 0) setElapsed(draft);
+  }, []);
+
+  // Persist the in-progress draft when the tab is hidden or closed
+  useEffect(() => {
+    const persist = () => {
+      const value = currentElapsed();
+      if (value > 0) saveDraftSession(value);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") persist();
+    };
+    window.addEventListener("pagehide", persist);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", persist);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [currentElapsed]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -186,10 +319,10 @@ export default function PracticeStopwatch() {
   const totalWithCurrent = stats.totalMs + elapsed;
   const { level } = getLevel(totalWithCurrent);
 
-  // Calculate durations for last 7 days from sessions
-  const last7DayDurations = useMemo(() => {
+  // Calculate durations for the last N days from sessions
+  const dayDurations = useMemo(() => {
     const durations: number[] = [];
-    for (let i = 6; i >= 0; i--) {
+    for (let i = HISTORY_DAYS - 1; i >= 0; i--) {
       const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
       const dayTotal = sessions
         .filter((s) => s.date === d)
@@ -199,14 +332,18 @@ export default function PracticeStopwatch() {
     return durations;
   }, [sessions]);
 
-  // Streak visualization — today's dot lights up as soon as the session passes 5s
-  const liveToday = last7DayDurations[6] + elapsed || elapsed >= 5000;
-  const last7Live = [...last7DayDurations.slice(0, 6), liveToday];
-  const dayLabels = useMemo(() => last7DayLabels(), []);
-  const liveStreak = stats.streak + (liveToday && !last7DayDurations[6] ? 1 : 0);
+  // Streak visualization — today's ring lights up as soon as the session passes 5s
+  const todayIdx = HISTORY_DAYS - 1;
+  const todayBaseMs = dayDurations[todayIdx];
+  const liveTodayMs = todayBaseMs + elapsed;
+  const dayDurationsLive = [...dayDurations.slice(0, todayIdx), liveTodayMs];
+  const practicedTodayLive = liveTodayMs >= 5000;
+  const dayLabels = useMemo(() => lastNDayLabels(HISTORY_DAYS), []);
+  const liveStreak =
+    stats.streak + (practicedTodayLive && todayBaseMs === 0 ? 1 : 0);
   const liveBest = Math.max(stats.bestStreak, liveStreak);
   const streakAtRisk =
-    stats.streak > 0 && !last7DayDurations[6] && elapsed < 5000;
+    stats.streak > 0 && todayBaseMs === 0 && elapsed < 5000;
 
   // Motivational message — richer nudges
   function getMessage(): string {
@@ -405,7 +542,7 @@ export default function PracticeStopwatch() {
 
       <div className="h-px bg-white/10 my-4" />
 
-      {/* Week strip */}
+      {/* This week */}
       <div>
         <div className="flex items-center justify-between mb-2.5">
           <span className="text-[11px] text-white/50 font-medium uppercase tracking-wider">
@@ -418,53 +555,17 @@ export default function PracticeStopwatch() {
             </span>
           </span>
         </div>
-        <div className="flex items-center justify-between gap-1">
-          {last7Live.map((dayMs, i) => {
-            const isToday = i === 6;
-            const ms = typeof dayMs === "number" ? dayMs : 0;
-            const fillPercent = Math.min((ms / goalMs) * 100, 100);
-            const hours = Math.floor(ms / 3600000);
-            const mins = Math.round((ms % 3600000) / 60000);
-            const displayTime = hours > 0 ? `${hours}h` : `${mins}m`;
-            const hasActivity = ms > 0;
-
-            return (
-              <div key={i} className="flex flex-col items-center gap-0.5 flex-1 group/day max-w-11">
-                <div
-                  className={`w-full aspect-square rounded-sm relative overflow-hidden transition-all ${
-                    isToday && !hasActivity ? "ring-1 ring-amber-400/50" : ""
-                  } ${!hasActivity ? "bg-white/5 border border-white/10" : "bg-gradient-to-br from-amber-400/30 to-amber-500/30"}`}
-                >
-                  {hasActivity && (
-                    <div
-                      className="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-500 transition-all"
-                      style={{ opacity: Math.max(Math.min(fillPercent / 100, 1), 0.4) }}
-                    />
-                  )}
-                  {hasActivity && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[8px] font-bold text-stone-900 drop-shadow-sm tabular-nums">
-                        {displayTime}
-                      </span>
-                    </div>
-                  )}
-                  {/* Hover tooltip */}
-                  {hasActivity && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-stone-900 text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover/day:opacity-100 pointer-events-none transition-opacity z-20">
-                      {formatDuration(ms)}
-                    </div>
-                  )}
-                </div>
-                <span
-                  className={`text-[9px] font-medium ${
-                    isToday ? "text-amber-300" : "text-white/30"
-                  }`}
-                >
-                  {dayLabels[i]}
-                </span>
-              </div>
-            );
-          })}
+        <div className="flex items-start justify-between gap-1.5">
+          {dayDurationsLive.map((ms, i) => (
+            <div key={i} className="flex-1 max-w-11">
+              <MiniDayRing
+                ms={ms}
+                goalMs={goalMs}
+                isToday={i === todayIdx}
+                label={dayLabels[i]}
+              />
+            </div>
+          ))}
         </div>
       </div>
 

@@ -25,6 +25,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: product.title,
     description: product.description.slice(0, 160),
+    alternates: {
+      canonical: `/shop/product/${handle}`,
+    },
     openGraph: {
       title: product.title,
       description: product.description.slice(0, 160),
@@ -58,8 +61,83 @@ export default async function ProductPage({ params }: PageProps) {
   const images = product.images.edges.map((e) => e.node);
   const variants = product.variants.edges.map((e) => e.node);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://maaflutes.com";
+  const productUrl = `${siteUrl}/shop/product/${handle}`;
+  const availability = product.availableForSale
+    ? "https://schema.org/InStock"
+    : "https://schema.org/OutOfStock";
+
+  const schemaImages = (images.length > 0
+    ? images
+    : product.featuredImage
+      ? [product.featuredImage]
+      : []
+  ).map((img) => img.url);
+
+  const offers =
+    variants.length > 1
+      ? {
+          "@type": "AggregateOffer",
+          priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+          lowPrice: product.priceRange.minVariantPrice.amount,
+          highPrice: product.priceRange.maxVariantPrice.amount,
+          offerCount: variants.length,
+          availability,
+          itemCondition: "https://schema.org/NewCondition",
+          url: productUrl,
+        }
+      : {
+          "@type": "Offer",
+          priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+          price: product.priceRange.minVariantPrice.amount,
+          availability,
+          itemCondition: "https://schema.org/NewCondition",
+          url: productUrl,
+        };
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description,
+    sku: product.handle,
+    url: productUrl,
+    ...(schemaImages.length > 0 && { image: schemaImages }),
+    ...(product.vendor && {
+      brand: { "@type": "Brand", name: product.vendor },
+    }),
+    offers,
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Shop",
+        item: `${siteUrl}/shop`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.title,
+        item: productUrl,
+      },
+    ],
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-stone-400 mb-10">
         <Link href="/shop" className="hover:text-amber-700 transition-colors">

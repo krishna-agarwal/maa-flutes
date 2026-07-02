@@ -26,6 +26,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: collection.title,
     description: collection.description || `Browse ${collection.title} products.`,
+    alternates: {
+      canonical: `/shop/collections/${handle}`,
+    },
   };
 }
 

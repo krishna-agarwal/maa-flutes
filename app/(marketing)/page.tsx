@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: "Maa Flutes — Handcrafted Indian Classical Flutes",
   description:
     "Explore our handcrafted bansuri flutes, practice with free music tools, and deepen your journey in Indian classical music.",
+  alternates: {
+    canonical: "/",
+  },
 };
 
 export default function HomePage() {

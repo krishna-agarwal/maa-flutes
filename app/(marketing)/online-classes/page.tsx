@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Online Flute Classes — Learn Bansuri Step by Step",
   description:
     "Join our structured online flute courses. Daily riyaz, certificate programs, and step-by-step learning from beginner to advanced level.",
+  alternates: {
+    canonical: "/online-classes",
+  },
 };
 
 export default function OnlineClassesPage() {

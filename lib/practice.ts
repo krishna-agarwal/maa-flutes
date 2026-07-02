@@ -26,7 +26,11 @@ export interface DailyStats {
 
 const STORAGE_KEY = "maa-flutes-practice";
 const GOAL_STORAGE_KEY = "maa-flutes-daily-goal-ms";
+const DRAFT_STORAGE_KEY = "maa-flutes-practice-draft";
 const today = () => new Date().toISOString().slice(0, 10);
+
+// Discard a draft older than this — likely an abandoned/forgotten timer
+const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export const GOAL_MIN_MS = 10 * 60 * 1000;
 export const GOAL_MAX_MS = 120 * 60 * 1000;
@@ -59,6 +63,54 @@ function saveLocalGoal(ms: number) {
 function clearLocalGoal() {
   try {
     localStorage.removeItem(GOAL_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+// ---------- In-progress draft helpers ----------
+// A draft is the elapsed time of a not-yet-committed session. It's persisted
+// while the stopwatch runs / is paused so the time isn't lost if the user
+// closes the tab or navigates away before clicking "Done".
+
+export function saveDraftSession(elapsedMs: number) {
+  try {
+    if (elapsedMs <= 0) {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(
+      DRAFT_STORAGE_KEY,
+      JSON.stringify({ elapsed: Math.round(elapsedMs), savedAt: Date.now() }),
+    );
+  } catch {
+    // quota exceeded, private mode, etc.
+  }
+}
+
+export function loadDraftSession(): number {
+  try {
+    const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) return 0;
+    const { elapsed, savedAt } = JSON.parse(raw) as {
+      elapsed: number;
+      savedAt: number;
+    };
+    if (!Number.isFinite(elapsed) || elapsed <= 0) return 0;
+    // Ignore stale drafts
+    if (!Number.isFinite(savedAt) || Date.now() - savedAt > DRAFT_MAX_AGE_MS) {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      return 0;
+    }
+    return elapsed;
+  } catch {
+    return 0;
+  }
+}
+
+export function clearDraftSession() {
+  try {
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
   } catch {
     // ignore
   }

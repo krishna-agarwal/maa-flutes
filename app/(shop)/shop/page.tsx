@@ -9,6 +9,9 @@ import type { ShopifyProduct } from "@/lib/shopify/types";
 export const metadata: Metadata = {
   title: "Shop",
   description: "Browse handcrafted Indian classical flutes and accessories.",
+  alternates: {
+    canonical: "/shop",
+  },
 };
 
 function categorizeProduct(product: ShopifyProduct): string {
