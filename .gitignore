@@ -43,3 +43,13 @@ next-env.d.ts
 # service worker (generated at build time)
 /public/sw.js
 /public/sw.js.map
+
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+
+!.env.example
