@@ -15,6 +15,7 @@ const navLinks = [
   { href: "/shop", label: "Shop" },
   { href: "/courses", label: "Courses" },
   { href: "/online-classes", label: "Online Classes" },
+  { href: "/loop-practice", label: "Loop Practice" },
   { href: "/blog", label: "Blog" },
 ];
 
